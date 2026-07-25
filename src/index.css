@@ -1,0 +1,989 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --sidebar-width: 280px;
+  /* Cube rotation pivots: half the panel width (horizontal spins) and half
+     the panel height (vertical spins) behind the screen */
+  --cube-depth-x: calc(50vw - var(--sidebar-width) / 2);
+  --cube-depth-y: 50vh;
+
+  /* LIGHT THEME (DEFAULT) */
+  --bg-main: #f8fafc;
+  --bg-card: rgba(255, 255, 255, 0.7);
+  --bg-sidebar: rgba(241, 245, 249, 0.95);
+  --border-glow: rgba(139, 92, 246, 0.08);
+  --border-light: rgba(15, 23, 42, 0.08);
+  
+  --primary: #8b5cf6;
+  --primary-glow: rgba(139, 92, 246, 0.2);
+  --primary-dark: #6d28d9;
+  
+  --secondary: #0d9488;
+  --secondary-glow: rgba(13, 148, 136, 0.2);
+  
+  --accent: #e11d48;
+  --accent-glow: rgba(225, 29, 72, 0.2);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.06);
+  
+  --font-title: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html.dark {
+  /* DARK THEME */
+  --bg-main: #06060c;
+  --bg-card: rgba(18, 18, 32, 0.6);
+  --bg-sidebar: rgba(10, 10, 18, 0.85);
+  --border-glow: rgba(147, 51, 234, 0.15);
+  --border-light: rgba(255, 255, 255, 0.08);
+  
+  --primary: #a855f7;
+  --primary-glow: rgba(168, 85, 247, 0.35);
+  --primary-dark: #7e22ce;
+  
+  --secondary: #14b8a6;
+  --secondary-glow: rgba(20, 184, 166, 0.35);
+  
+  --accent: #f43f5e;
+  --accent-glow: rgba(244, 63, 94, 0.35);
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --glass-bg: rgba(15, 15, 27, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  height: 100vh;
+  width: 100vw;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: var(--primary-glow);
+  box-shadow: 0 0 20px var(--border-glow);
+  transform: translateY(-2px);
+}
+
+/* Navigation Layout */
+.app-container {
+  display: flex;
+  height: 100vh;
+  height: 100dvh; /* mobile URL-bar-safe viewport */
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Mobile chrome — hidden on desktop */
+.mobile-topbar {
+  display: none;
+}
+.sidebar-backdrop {
+  display: none;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: var(--bg-sidebar);
+  backdrop-filter: blur(20px);
+  z-index: 10;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.main-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 40px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  /* The main panel is always charcoal, in both themes. Redefining --bg-main
+     here (rather than background-color directly) also carries the charcoal
+     into dialogs/drawers/popovers rendered inside the panel. */
+  --bg-main: #36454f;
+  background-color: var(--bg-main);
+  transition: background-color 0.3s ease;
+}
+
+/* In light mode the panel is dark while the rest of the app stays light,
+   so pull the dark-theme foreground variables into the panel's scope
+   (CSS custom properties inherit, covering every component inside). */
+html:not(.dark) .main-content {
+  --bg-card: rgba(18, 18, 32, 0.6);
+  --border-glow: rgba(147, 51, 234, 0.15);
+  --border-light: rgba(255, 255, 255, 0.08);
+  --primary: #a855f7;
+  --primary-glow: rgba(168, 85, 247, 0.35);
+  --secondary: #14b8a6;
+  --accent: #f43f5e;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --glass-bg: rgba(15, 15, 27, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Restore the bright gradient inside the (always dark) panel in light mode;
+   the global light-mode override below picks darker purples for white bg */
+html:not(.dark) .main-content .gradient-text {
+  background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ============ MOBILE LAYOUT (collapsible sidebar) ============ */
+@media (max-width: 900px) {
+  :root {
+    /* The sidebar overlays instead of occupying layout width, so the panel
+       spans the full viewport — zeroing this keeps cube geometry correct */
+    --sidebar-width: 0px;
+  }
+
+  .app-container {
+    flex-direction: column;
+  }
+
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border-light);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    flex-shrink: 0;
+    z-index: 60;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100dvh;
+    width: min(300px, 82vw);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.3s ease, border-color 0.3s ease;
+    z-index: 100;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.25);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 6, 10, 0.5);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 90;
+  }
+
+  .main-content {
+    padding: 20px;
+    overflow-x: hidden;
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+  }
+
+  .section-desc {
+    font-size: 0.95rem;
+  }
+
+  [popover].modern-drawer {
+    width: min(400px, 85vw);
+  }
+}
+
+/* Typography & Layout Elements */
+h1, h2, h3, h4 {
+  font-family: var(--font-title);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Adjust gradients in light mode to look more readable */
+html:not(.dark) .gradient-text {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #4f46e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.section-title {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+}
+
+.section-desc {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: 700px;
+  line-height: 1.6;
+}
+
+/* View Transition Styles */
+
+/* Page transitions animate ONLY the main content area, never the sidebar.
+   navigateWithTransition adds `content-transition` alongside the style class,
+   which lifts .main-content into its own snapshot group; the sidebar stays in
+   the root snapshot, which nobody animates (its default cross-fade between two
+   identical sidebars is invisible). The theme toggle does NOT add this class,
+   so its circular reveal still covers the whole viewport including sidebar. */
+html.content-transition .main-content {
+  view-transition-name: main-content;
+}
+
+/* Confine the animation to the panel's box so it never paints over the
+   sidebar: snapshot groups don't clip by default, letting transforms bleed
+   out (slide enters from the left across the sidebar, cube faces swing wide
+   in perspective). NOTE: the clip must live on the GROUP — putting overflow
+   on the image-pair would be a 3D-flattening grouping property and break the
+   cube's preserve-3d. */
+::view-transition-group(main-content) {
+  overflow: clip;
+}
+
+/* 1. Global View Transition Settings */
+::view-transition-group(root),
+::view-transition-group(main-content) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* 2. Fade Transition */
+html.fade-transition::view-transition-old(main-content) {
+  animation: fade-out 0.3s ease-out both;
+}
+html.fade-transition::view-transition-new(main-content) {
+  animation: fade-in 0.3s ease-in both;
+}
+
+@keyframes fade-out {
+  to { opacity: 0; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+/* 3. Slide Transitions (four directions; named after the content's motion) */
+html.slide-right-transition::view-transition-old(main-content) {
+  animation: slide-out-right 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+html.slide-right-transition::view-transition-new(main-content) {
+  animation: slide-in-from-left 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+html.slide-left-transition::view-transition-old(main-content) {
+  animation: slide-out-left 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+html.slide-left-transition::view-transition-new(main-content) {
+  animation: slide-in-from-right 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+html.slide-up-transition::view-transition-old(main-content) {
+  animation: slide-out-up 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+html.slide-up-transition::view-transition-new(main-content) {
+  animation: slide-in-from-bottom 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+html.slide-down-transition::view-transition-old(main-content) {
+  animation: slide-out-down 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+html.slide-down-transition::view-transition-new(main-content) {
+  animation: slide-in-from-top 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes slide-out-left {
+  to { transform: translateX(-100%); opacity: 0; }
+}
+@keyframes slide-out-right {
+  to { transform: translateX(100%); opacity: 0; }
+}
+@keyframes slide-out-up {
+  to { transform: translateY(-100%); opacity: 0; }
+}
+@keyframes slide-out-down {
+  to { transform: translateY(100%); opacity: 0; }
+}
+@keyframes slide-in-from-left {
+  from { transform: translateX(-100%); opacity: 0; }
+}
+@keyframes slide-in-from-right {
+  from { transform: translateX(100%); opacity: 0; }
+}
+@keyframes slide-in-from-top {
+  from { transform: translateY(-100%); opacity: 0; }
+}
+@keyframes slide-in-from-bottom {
+  from { transform: translateY(100%); opacity: 0; }
+}
+
+/* 4. Cinema Scale Transition */
+html.cinema-transition::view-transition-old(main-content) {
+  animation: cinema-out 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+  mix-blend-mode: normal;
+}
+html.cinema-transition::view-transition-new(main-content) {
+  animation: cinema-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+  mix-blend-mode: normal;
+}
+
+@keyframes cinema-out {
+  to {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+@keyframes cinema-in {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+/* 5. Wipe Reveal Transition */
+html.wipe-transition::view-transition-old(main-content) {
+  animation: fade-out 0.2s ease-out both;
+  mix-blend-mode: normal;
+}
+html.wipe-transition::view-transition-new(main-content) {
+  animation: wipe-reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  mix-blend-mode: normal;
+}
+
+@keyframes wipe-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* 6. Circle Clip Reveal Transition */
+/* --click-x/--click-y are set relative to .main-content, since the clip-path
+   resolves in the snapshot's own coordinate space (see setClickCoords) */
+html.circle-reveal-transition::view-transition-old(main-content) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.circle-reveal-transition::view-transition-new(main-content) {
+  animation: clip-reveal 0.65s cubic-bezier(0.4, 0, 0.2, 1) both;
+  mix-blend-mode: normal;
+}
+
+/* 7. Theme Change Circular Reveal Transition */
+html.theme-change-transition::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.theme-change-transition::view-transition-new(root) {
+  animation: clip-reveal 0.75s cubic-bezier(0.4, 0, 0.2, 1) both;
+  mix-blend-mode: normal;
+}
+
+@keyframes clip-reveal {
+  from {
+    clip-path: circle(0% at var(--click-x, 50%) var(--click-y, 50%));
+  }
+  to {
+    clip-path: circle(150% at var(--click-x, 50%) var(--click-y, 50%));
+  }
+}
+
+/* 8. 3D Cube Rotation Transitions (four directions) */
+/* Old and new snapshots become adjacent faces of a cube. Horizontal spins
+   (left/right, rotateY) pivot --cube-depth-x behind the screen; vertical
+   spins (up/down, rotateX) pivot --cube-depth-y. Perspective lives on the
+   image-pair, the direct parent of both snapshots. */
+html.cube-left-transition::view-transition-image-pair(main-content),
+html.cube-right-transition::view-transition-image-pair(main-content),
+html.cube-up-transition::view-transition-image-pair(main-content),
+html.cube-down-transition::view-transition-image-pair(main-content) {
+  perspective: 140vw;
+  transform-style: preserve-3d;
+  /* isolation: isolate (UA default) is a grouping property that would
+     force the snapshots flat; both faces use normal blending anyway */
+  isolation: auto;
+}
+
+html.cube-left-transition::view-transition-old(main-content),
+html.cube-left-transition::view-transition-new(main-content),
+html.cube-right-transition::view-transition-old(main-content),
+html.cube-right-transition::view-transition-new(main-content),
+html.cube-up-transition::view-transition-old(main-content),
+html.cube-up-transition::view-transition-new(main-content),
+html.cube-down-transition::view-transition-old(main-content),
+html.cube-down-transition::view-transition-new(main-content) {
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.65, 0.05, 0.36, 1);
+  animation-fill-mode: both;
+  backface-visibility: hidden;
+  mix-blend-mode: normal;
+}
+
+html.cube-left-transition::view-transition-old(main-content) {
+  animation-name: cube-out-left;
+}
+html.cube-left-transition::view-transition-new(main-content) {
+  animation-name: cube-in-from-right;
+}
+html.cube-right-transition::view-transition-old(main-content) {
+  animation-name: cube-out-right;
+}
+html.cube-right-transition::view-transition-new(main-content) {
+  animation-name: cube-in-from-left;
+}
+html.cube-up-transition::view-transition-old(main-content) {
+  animation-name: cube-out-up;
+}
+html.cube-up-transition::view-transition-new(main-content) {
+  animation-name: cube-in-from-bottom;
+}
+html.cube-down-transition::view-transition-old(main-content) {
+  animation-name: cube-out-down;
+}
+html.cube-down-transition::view-transition-new(main-content) {
+  animation-name: cube-in-from-top;
+}
+
+/* Horizontal spins (rotateY, pivot at --cube-depth-x) */
+@keyframes cube-out-left {
+  from { transform: translateZ(calc(-1 * var(--cube-depth-x))) rotateY(0deg) translateZ(var(--cube-depth-x)); }
+  to { transform: translateZ(calc(-1 * var(--cube-depth-x))) rotateY(-90deg) translateZ(var(--cube-depth-x)); }
+}
+@keyframes cube-in-from-right {
+  from { transform: translateZ(calc(-1 * var(--cube-depth-x))) rotateY(90deg) translateZ(var(--cube-depth-x)); }
+  to { transform: translateZ(calc(-1 * var(--cube-depth-x))) rotateY(0deg) translateZ(var(--cube-depth-x)); }
+}
+@keyframes cube-out-right {
+  from { transform: translateZ(calc(-1 * var(--cube-depth-x))) rotateY(0deg) translateZ(var(--cube-depth-x)); }
+  to { transform: translateZ(calc(-1 * var(--cube-depth-x))) rotateY(90deg) translateZ(var(--cube-depth-x)); }
+}
+@keyframes cube-in-from-left {
+  from { transform: translateZ(calc(-1 * var(--cube-depth-x))) rotateY(-90deg) translateZ(var(--cube-depth-x)); }
+  to { transform: translateZ(calc(-1 * var(--cube-depth-x))) rotateY(0deg) translateZ(var(--cube-depth-x)); }
+}
+
+/* Vertical spins (rotateX, pivot at --cube-depth-y) */
+@keyframes cube-out-up {
+  from { transform: translateZ(calc(-1 * var(--cube-depth-y))) rotateX(0deg) translateZ(var(--cube-depth-y)); }
+  to { transform: translateZ(calc(-1 * var(--cube-depth-y))) rotateX(90deg) translateZ(var(--cube-depth-y)); }
+}
+@keyframes cube-in-from-bottom {
+  from { transform: translateZ(calc(-1 * var(--cube-depth-y))) rotateX(-90deg) translateZ(var(--cube-depth-y)); }
+  to { transform: translateZ(calc(-1 * var(--cube-depth-y))) rotateX(0deg) translateZ(var(--cube-depth-y)); }
+}
+@keyframes cube-out-down {
+  from { transform: translateZ(calc(-1 * var(--cube-depth-y))) rotateX(0deg) translateZ(var(--cube-depth-y)); }
+  to { transform: translateZ(calc(-1 * var(--cube-depth-y))) rotateX(-90deg) translateZ(var(--cube-depth-y)); }
+}
+@keyframes cube-in-from-top {
+  from { transform: translateZ(calc(-1 * var(--cube-depth-y))) rotateX(90deg) translateZ(var(--cube-depth-y)); }
+  to { transform: translateZ(calc(-1 * var(--cube-depth-y))) rotateX(0deg) translateZ(var(--cube-depth-y)); }
+}
+
+/* 9. Card Flip Transition */
+/* The panel flips in place: old face rotates edge-on in the first half,
+   new face completes the turn in the second (sequenced via animation delay) */
+html.card-flip-transition::view-transition-image-pair(main-content) {
+  perspective: 140vw;
+  transform-style: preserve-3d;
+  isolation: auto;
+}
+html.card-flip-transition::view-transition-old(main-content) {
+  animation: flip-out 0.35s cubic-bezier(0.55, 0, 1, 0.45) both;
+  backface-visibility: hidden;
+  mix-blend-mode: normal;
+}
+html.card-flip-transition::view-transition-new(main-content) {
+  animation: flip-in 0.35s cubic-bezier(0, 0.55, 0.45, 1) 0.35s both;
+  backface-visibility: hidden;
+  mix-blend-mode: normal;
+}
+@keyframes flip-out {
+  to { transform: rotateY(-90deg); }
+}
+@keyframes flip-in {
+  from { transform: rotateY(90deg); }
+}
+
+/* 10. Swing Doors Transition */
+/* Both pages hinge on opposite edges and swing INTO the screen (positive
+   rotateY sends the free edge away from the viewer) — like saloon doors
+   pushed open away from you. Swinging toward the viewer sweeps a huge face
+   across the viewport and looks broken; never flip these signs. */
+html.swing-transition::view-transition-image-pair(main-content) {
+  perspective: 110vw;
+  transform-style: preserve-3d;
+  isolation: auto;
+}
+html.swing-transition::view-transition-old(main-content) {
+  transform-origin: left center;
+  animation: swing-out 0.5s cubic-bezier(0.55, 0, 0.55, 0.2) both;
+  backface-visibility: hidden;
+  mix-blend-mode: normal;
+}
+html.swing-transition::view-transition-new(main-content) {
+  transform-origin: right center;
+  animation: swing-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
+  backface-visibility: hidden;
+  mix-blend-mode: normal;
+}
+@keyframes swing-out {
+  to { transform: rotateY(90deg); opacity: 0.2; }
+}
+@keyframes swing-in {
+  from { transform: rotateY(-90deg); opacity: 0.3; }
+}
+
+/* 11. Focus Blur Transition */
+/* Flat snapshots (no preserve-3d here), so filter is safe to animate */
+html.focus-blur-transition::view-transition-old(main-content) {
+  animation: blur-out 0.45s ease-in both;
+  mix-blend-mode: normal;
+}
+html.focus-blur-transition::view-transition-new(main-content) {
+  animation: blur-in 0.45s ease-out 0.1s both;
+  mix-blend-mode: normal;
+}
+@keyframes blur-out {
+  to { filter: blur(18px); opacity: 0; transform: scale(1.05); }
+}
+@keyframes blur-in {
+  from { filter: blur(18px); opacity: 0; transform: scale(0.96); }
+}
+
+/* 12. Center Split Transition */
+html.center-split-transition::view-transition-old(main-content) {
+  animation: split-fade 0.5s ease both;
+  mix-blend-mode: normal;
+}
+html.center-split-transition::view-transition-new(main-content) {
+  animation: split-reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+  mix-blend-mode: normal;
+}
+@keyframes split-fade {
+  to { opacity: 0; transform: scale(0.97); }
+}
+@keyframes split-reveal {
+  from { clip-path: inset(0 50% 0 50%); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* 13. Velocity Skew Transition */
+/* Skew sells the speed; the group's overflow: clip contains the overshoot */
+html.velocity-transition::view-transition-old(main-content) {
+  animation: velocity-out 0.4s cubic-bezier(0.7, 0, 0.84, 0) both;
+  mix-blend-mode: normal;
+}
+html.velocity-transition::view-transition-new(main-content) {
+  animation: velocity-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+  mix-blend-mode: normal;
+}
+@keyframes velocity-out {
+  to { transform: translateX(-120%) skewX(10deg); opacity: 0.3; }
+}
+@keyframes velocity-in {
+  from { transform: translateX(120%) skewX(-10deg); opacity: 0.5; }
+}
+
+/* 14. Blinds Transitions (Keynote-style venetian slats, four directions) */
+/* Gradient color stops can't be animated directly, but a registered custom
+   property CAN — the mask-image re-resolves every frame as --blinds-slat
+   tweens 0 → 1, widening each slat until they merge. Slat thickness comes
+   from --blinds-band (set inline on <html> by the Settings slider), so the
+   keyframes are size-independent: visible portion = ratio × band. */
+@property --blinds-slat {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+:root {
+  --blinds-band: 48px; /* default slat thickness; Settings overrides inline */
+}
+
+html.blinds-down-transition::view-transition-old(main-content),
+html.blinds-up-transition::view-transition-old(main-content),
+html.blinds-left-transition::view-transition-old(main-content),
+html.blinds-right-transition::view-transition-old(main-content) {
+  animation: none; /* stays put; the new page is revealed through the slats */
+  mix-blend-mode: normal;
+}
+
+html.blinds-down-transition::view-transition-new(main-content),
+html.blinds-up-transition::view-transition-new(main-content),
+html.blinds-left-transition::view-transition-new(main-content),
+html.blinds-right-transition::view-transition-new(main-content) {
+  animation: blinds-open 0.6s ease-in-out both;
+  mix-blend-mode: normal;
+}
+
+html.blinds-down-transition::view-transition-new(main-content) {
+  mask-image: repeating-linear-gradient(
+    to bottom,
+    black 0,
+    black calc(var(--blinds-slat) * var(--blinds-band)),
+    transparent calc(var(--blinds-slat) * var(--blinds-band)),
+    transparent var(--blinds-band)
+  );
+}
+html.blinds-up-transition::view-transition-new(main-content) {
+  mask-image: repeating-linear-gradient(
+    to top,
+    black 0,
+    black calc(var(--blinds-slat) * var(--blinds-band)),
+    transparent calc(var(--blinds-slat) * var(--blinds-band)),
+    transparent var(--blinds-band)
+  );
+}
+html.blinds-left-transition::view-transition-new(main-content) {
+  mask-image: repeating-linear-gradient(
+    to left,
+    black 0,
+    black calc(var(--blinds-slat) * var(--blinds-band)),
+    transparent calc(var(--blinds-slat) * var(--blinds-band)),
+    transparent var(--blinds-band)
+  );
+}
+html.blinds-right-transition::view-transition-new(main-content) {
+  mask-image: repeating-linear-gradient(
+    to right,
+    black 0,
+    black calc(var(--blinds-slat) * var(--blinds-band)),
+    transparent calc(var(--blinds-slat) * var(--blinds-band)),
+    transparent var(--blinds-band)
+  );
+}
+
+@keyframes blinds-open {
+  from { --blinds-slat: 0; }
+  to { --blinds-slat: 1; }
+}
+
+/* 15. Reflection Transition (Keynote-style glossy stage) */
+/* Three beats: dolly back (reflection appears on the floor), glide across,
+   dock forward. -webkit-box-reflect paints the mirrored floor reflection and
+   is supported by the same engines that ship view transitions. */
+html.reflection-transition::view-transition-image-pair(main-content) {
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(148, 163, 184, 0.12), transparent 60%),
+    #05060a;
+}
+html.reflection-transition::view-transition-old(main-content),
+html.reflection-transition::view-transition-new(main-content) {
+  mix-blend-mode: normal;
+  transform-origin: 50% 40%;
+  -webkit-box-reflect: below 10px linear-gradient(transparent 55%, rgba(255, 255, 255, 0.18));
+  animation-duration: 1s;
+  animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1);
+  animation-fill-mode: both;
+}
+html.reflection-transition::view-transition-old(main-content) {
+  animation-name: reflect-out;
+}
+html.reflection-transition::view-transition-new(main-content) {
+  animation-name: reflect-in;
+}
+
+@keyframes reflect-out {
+  0% { transform: scale(1); }
+  25% { transform: scale(0.78); }
+  75%, 100% { transform: scale(0.78) translateX(-130%); }
+}
+@keyframes reflect-in {
+  0%, 25% { transform: scale(0.78) translateX(130%); }
+  75% { transform: scale(0.78) translateX(0); }
+  100% { transform: scale(1) translateX(0); }
+}
+
+/* Shared Element Transitions */
+/* Anomaly images carry a per-item view-transition-name (anomaly-<id>) plus a
+   shared view-transition-class, so this one rule tunes every image morph —
+   including cross-page flights between Dashboard thumbnails, gallery cards,
+   and the detail hero. */
+::view-transition-group(.anomaly-media) {
+  /* keep short — long image morphs visibly stutter on Safari */
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Let snapshots fill the morphing group so aspect-ratio changes stay smooth.
+   width+height+object-fit is also the Safari anti-stutter fix — Safari renders
+   morphs on the main thread and janks without it (rotecodefraktion.de). */
+::view-transition-old(.anomaly-media),
+::view-transition-new(.anomaly-media) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* TOP LAYER ANIMATIONS (@starting-style & allow-discrete) */
+
+/* Modern Dialog Styling */
+dialog.modern-dialog {
+  margin: auto;
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 500px;
+  width: 90%;
+  color: var(--text-primary);
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-light);
+  
+  /* BASE (EXIT / CLOSED) STATE */
+  opacity: 0;
+  transform: scale(0.9) translateY(30px);
+  display: none; /* Hide from layout */
+  
+  /* Configure transition properties */
+  transition-property: opacity, transform, display, overlay;
+  transition-duration: 0.4s;
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-behavior: allow-discrete;
+}
+
+html.dark dialog.modern-dialog {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Open State */
+dialog.modern-dialog[open] {
+  display: flex;
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* ENTRY / STARTING STATE */
+@starting-style {
+  dialog.modern-dialog[open] {
+    opacity: 0;
+    transform: scale(0.9) translateY(30px);
+  }
+}
+
+/* Backdrop Styling */
+dialog.modern-dialog::backdrop {
+  background-color: rgba(5, 5, 10, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  
+  transition:
+    background-color 0.4s ease-out,
+    backdrop-filter 0.4s ease-out,
+    display 0.4s allow-discrete,
+    overlay 0.4s allow-discrete;
+}
+
+dialog.modern-dialog[open]::backdrop {
+  background-color: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+html.dark dialog.modern-dialog[open]::backdrop {
+  background-color: rgba(5, 5, 10, 0.8);
+}
+
+@starting-style {
+  dialog.modern-dialog[open]::backdrop {
+    background-color: rgba(5, 5, 10, 0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+}
+
+
+/* Modern Drawer Styling */
+[popover].modern-drawer {
+  inset: 0 0 0 auto; /* Align to the right edge */
+  height: 100vh;
+  width: 400px;
+  padding: 32px;
+  border-left: 1px solid var(--border-light);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+  background-color: var(--bg-main);
+  
+  /* BASE (EXIT / CLOSED) STATE */
+  opacity: 0;
+  transform: translateX(100%);
+  display: none;
+  
+  transition-property: opacity, transform, display, overlay;
+  transition-duration: 0.4s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-behavior: allow-discrete;
+}
+
+html.dark [popover].modern-drawer {
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+}
+
+[popover].modern-drawer:popover-open {
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@starting-style {
+  [popover].modern-drawer:popover-open {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+[popover].modern-drawer::backdrop {
+  background-color: rgba(5, 5, 10, 0);
+  backdrop-filter: blur(0px);
+  
+  transition:
+    background-color 0.4s ease-out,
+    backdrop-filter 0.4s ease-out,
+    display 0.4s allow-discrete,
+    overlay 0.4s allow-discrete;
+}
+
+[popover].modern-drawer:popover-open::backdrop {
+  background-color: rgba(15, 23, 42, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+html.dark [popover].modern-drawer:popover-open::backdrop {
+  background-color: rgba(5, 5, 10, 0.6);
+}
+
+@starting-style {
+  [popover].modern-drawer:popover-open::backdrop {
+    background-color: rgba(5, 5, 10, 0);
+    backdrop-filter: blur(0px);
+  }
+}
+
+
+/* Tooltip Popover */
+[popover].modern-popover {
+  margin: unset;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+  background-color: var(--bg-main);
+  width: 280px;
+  color: var(--text-primary);
+  
+  /* BASE (EXIT / CLOSED) STATE */
+  opacity: 0;
+  transform: translateY(12px) scale(0.95);
+  display: none;
+  
+  transition-property: opacity, transform, display, overlay;
+  transition-duration: 0.25s;
+  transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition-behavior: allow-discrete;
+}
+
+html.dark [popover].modern-popover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+}
+
+[popover].modern-popover:popover-open {
+  display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+@starting-style {
+  [popover].modern-popover:popover-open {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+}
