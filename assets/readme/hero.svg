@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1200" height="340" viewBox="0 0 1200 340"
+     role="img" aria-labelledby="title desc">
+  <title id="title">CSS Native Transitions</title>
+  <desc id="desc">Twenty-one native view-transition page effects. Diagram: a sidebar stays static while the content panel rotates like a 3D cube between its old and new snapshots.</desc>
+
+  <defs>
+    <linearGradient id="face-new" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a855f7"/>
+      <stop offset="1" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="title-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c084fc"/>
+      <stop offset="0.55" stop-color="#a855f7"/>
+      <stop offset="1" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="340" rx="26" fill="#06060c"/>
+  <rect x="1" y="1" width="1198" height="338" rx="25" fill="none" stroke="#1e1b2e" stroke-width="2"/>
+
+  <g id="title-block" transform="translate(64 0)">
+    <text y="78" font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+          font-size="18" letter-spacing="4" fill="#14b8a6">NATIVE CSS · VIEW TRANSITIONS API</text>
+
+    <text y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+          font-size="60" font-weight="800" fill="#f8fafc">CSS <tspan fill="url(#title-grad)">Native Transitions</tspan></text>
+
+    <text y="196" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+          font-size="24" fill="#94a3b8">21 configurable page transitions, image morphs and</text>
+    <text y="230" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+          font-size="24" fill="#94a3b8">top-layer effects — no libraries, just the platform.</text>
+
+    <text y="288" font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+          font-size="17" fill="#64748b">React 19 · Vite 8 · TypeScript · zero animation dependencies</text>
+  </g>
+
+  <g id="project-proof" transform="translate(720 0)">
+    <!-- app frame -->
+    <rect x="0" y="50" width="420" height="240" rx="18" fill="#0b0d16" stroke="#272438" stroke-width="2"/>
+
+    <!-- static sidebar -->
+    <rect x="16" y="66" width="86" height="208" rx="10" fill="#11131f" stroke="#14b8a6" stroke-width="1.5" stroke-opacity="0.5"/>
+    <rect x="30" y="86" width="58" height="12" rx="6" fill="#a855f7"/>
+    <rect x="30" y="110" width="58" height="12" rx="6" fill="#2a2d3f"/>
+    <rect x="30" y="134" width="58" height="12" rx="6" fill="#2a2d3f"/>
+    <rect x="30" y="158" width="58" height="12" rx="6" fill="#2a2d3f"/>
+    <text x="59" y="256" text-anchor="middle"
+          font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" fill="#14b8a6">static</text>
+
+    <!-- panel mid cube-rotation: old face receding left, new face arriving right -->
+    <path id="face-old" d="M 122 104 L 258 74 L 258 266 L 122 236 Z"
+          fill="#171a28" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6 5"/>
+    <path d="M 258 74 L 396 100 L 396 240 L 258 266 Z"
+          fill="url(#face-new)" fill-opacity="0.9" stroke="#c084fc" stroke-width="1.5"/>
+
+    <!-- seam highlight -->
+    <line x1="258" y1="74" x2="258" y2="266" stroke="#f8fafc" stroke-width="2" stroke-opacity="0.55"/>
+
+    <text x="190" y="146" text-anchor="middle"
+          font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#94a3b8">old</text>
+    <text x="327" y="150" text-anchor="middle"
+          font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#f8fafc">new</text>
+
+    <!-- rotation cue -->
+    <path d="M 216 42 A 92 30 0 0 1 300 42" fill="none" stroke="#a855f7" stroke-width="2"/>
+    <path d="M 300 42 L 289 34 M 300 42 L 290 49" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/>
+
+    <text x="259" y="318" text-anchor="middle"
+          font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#64748b">sidebar stays · panel animates</text>
+  </g>
+</svg>
